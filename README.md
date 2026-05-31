@@ -257,6 +257,5 @@ voice-calendar-assistant
 
 11. 致谢（Acknowledgements）
 
-感谢 Google AI Studio 与 Gemini 提供的开发辅助能力。感谢所有参与测试与体验的同学提供反馈意见。
 
 时间管理工具的价值从来不只是安排未来，更是帮助人们看见自己走过的路。希望 Voice Calendar Assistant 能够成为一个记录时间、管理时间，也记录成长的工具。
