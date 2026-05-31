@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { CalendarEvent } from '../types';
-import { Trash2, Search, Clock, CalendarRange, Sparkles, Filter } from 'lucide-react';
+import { Trash2, Search, Clock, CalendarRange, Sparkles, Eye, EyeOff } from 'lucide-react';
 
 interface EventListProps {
   events: CalendarEvent[];
   selectedDate: string;
   onDeleteEvent: (id: string) => void;
   onClearAll: () => void;
+  widgetDisplayMode?: 'full' | 'count';
 }
 
-export default function EventList({ events, selectedDate, onDeleteEvent, onClearAll }: EventListProps) {
+export default function EventList({ 
+  events, 
+  selectedDate, 
+  onDeleteEvent, 
+  onClearAll,
+  widgetDisplayMode = 'full'
+}: EventListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'selected' | 'all'>('all'); // Show all by default so user can see list clearly
 
   // Helper to determine relative day string
   const getRelativeDayName = (dateStr: string) => {
-    if (dateStr === '2026-05-31') return '今天 (Today)';
-    if (dateStr === '2026-06-01') return '明天 (Tomorrow)';
-    if (dateStr === '2026-06-02') return '后天 (Day After)';
+    if (dateStr === '2026-05-31') return '今天';
+    if (dateStr === '2026-06-01') return '明天';
+    if (dateStr === '2026-06-02') return '后天';
     
     // Fallback format
     const tempDate = new Date(dateStr);
@@ -56,11 +63,11 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
   const filteredList = getFilteredEvents();
 
   return (
-    <div className="w-full bg-white rounded-[2rem] border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col h-full min-h-[460px]">
+    <div id="event-list-card" className="w-full bg-white rounded-[2rem] border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col h-full min-h-[460px]">
       {/* List Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
         <div>
-          <h2 className="text-lg font-bold text-slate-850 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <CalendarRange className="w-5 h-5 text-blue-600" />
             <span>日程安排清单</span>
           </h2>
@@ -71,6 +78,7 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
         <div className="flex items-center gap-2">
           {events.length > 0 && (
             <button
+              id="clear-all-btn"
               onClick={onClearAll}
               className="text-xs font-bold text-rose-500 hover:text-rose-650 px-3.5 py-1.5 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100"
             >
@@ -84,8 +92,9 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
       <div className="flex flex-col md:flex-row gap-3 mb-5">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 w-4 h-4 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
+            id="search-input"
             type="text"
             placeholder="搜索日程主题/时间..."
             value={searchQuery}
@@ -97,6 +106,7 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
         {/* Filters */}
         <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-250 self-start md:self-auto">
           <button
+            id="view-mode-all-btn"
             onClick={() => setViewMode('all')}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
               viewMode === 'all'
@@ -107,6 +117,7 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
             全部
           </button>
           <button
+            id="view-mode-selected-btn"
             onClick={() => setViewMode('selected')}
             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
               viewMode === 'selected'
@@ -126,7 +137,7 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
             <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 mb-4 animate-pulse">
               <Sparkles className="w-6 h-6" />
             </div>
-            <p className="text-sm font-bold text-slate-705">
+            <p className="text-sm font-bold text-slate-700">
               {searchQuery ? '未找到符合条件的日程' : '暂无日程安排'}
             </p>
             <p className="text-xs text-slate-400 max-w-xs mt-1.5 leading-relaxed">
@@ -141,15 +152,23 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
             return (
               <div
                 key={event.id}
+                id={`event-item-${event.id}`}
                 className="group flex items-center justify-between p-4 bg-slate-50/50 hover:bg-blue-50/20 rounded-2xl border border-slate-200 hover:border-blue-200 transition-all duration-300"
               >
-                <div className="flex items-start gap-3.5">
+                <div className="flex items-start gap-3.5 w-full mr-2">
                   {/* Decorative Left border indicator */}
-                  <span className="w-1 h-9 bg-blue-500 rounded-full mt-0.5" />
+                  <span className="w-1 h-9 bg-blue-500 rounded-full mt-0.5 shrink-0" />
                   
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-blue-900 transition-colors">
-                      {event.title}
+                      {widgetDisplayMode === 'count' ? (
+                        <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                          <EyeOff className="w-3.5 h-3.5 shrink-0" />
+                          <span>🔒 [已隐藏日程详情]</span>
+                        </span>
+                      ) : (
+                        <span>{event.title}</span>
+                      )}
                     </h4>
                     
                     <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 mt-1 text-xs text-slate-400">
@@ -175,7 +194,7 @@ export default function EventList({ events, selectedDate, onDeleteEvent, onClear
 
                 <button
                   onClick={() => onDeleteEvent(event.id)}
-                  className="p-2 text-slate-450 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-105"
+                  className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-105 shrink-0"
                   title="删除日程"
                 >
                   <Trash2 className="w-4 h-4" />

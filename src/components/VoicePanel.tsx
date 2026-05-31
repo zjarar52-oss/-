@@ -15,9 +15,12 @@ export default function VoicePanel({ onParseText, isLoading, addLog }: VoicePane
 
   // Suggested commands from requirements
   const suggestions = [
-    '明天下午三点腾讯面试',
-    '我明天有什么安排',
-    '删除腾讯面试'
+    '明天下午三点面试',
+    '后天10点开会',
+    '删除明天下午三点面试',
+    '查看今天日程',
+    '查询五月生日',
+    '记录高光时刻: 考过英语六级啦！'
   ];
 
   useEffect(() => {
