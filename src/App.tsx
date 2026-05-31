@@ -5,6 +5,7 @@ import Logs from './components/Logs';
 import VoicePanel from './components/VoicePanel';
 import { CalendarEvent, LogEntry } from './types';
 import { CalendarCheck, Shield, Mic, CheckCircle, HelpCircle, RefreshCw } from 'lucide-react';
+import { parseVoiceText } from './utils/nlp';
 
 export default function App() {
   // Use today 2026-05-31 as default selection reference
@@ -77,10 +78,10 @@ export default function App() {
     setLogs(prev => [...prev, newLog]);
   };
 
-  // Automated action runners triggered by Gemini Parser
+  // Automated action runners triggered by Local NLP Parser
   const executeIntent = (parsed: { action: 'add' | 'query' | 'delete'; title: string; date: string; time: string }, voiceText: string) => {
     const { action, title, date, time } = parsed;
-    addLog('gemini', `🧠 Gemini 理解意图:\n动作 Action: "${action}"\n主题 Title: "${title || '(无)'}"\n日期 Date: "${date || '(未提供)'}"\n时间 Time: "${time || '(全天)'}"`);
+    addLog('gemini', `🧠 Local NLP 识别意图:\n动作 Action: "${action}"\n主题 Title: "${title || '(无)'}"\n日期 Date: "${date || '(未提供)'}"\n时间 Time: "${time || '(全天)'}"`);
 
     switch (action) {
       case 'add': {
@@ -155,33 +156,23 @@ export default function App() {
     }
   };
 
-  // Call Express secure backend route to parse voice transcripts
+  // Call Rule-based Local NLP parser to resolve voice transcripts in browser
   const handleParseText = async (text: string) => {
     setIsLoading(true);
-    addLog('info', `🧠 正在呼叫 Gemini AI 微服务解析:“${text}”...`);
+    addLog('info', `🧠 本地 NLP 精准解析中:“${text}”...`);
+
+    // Tiny processing delay to give high fidelity realistic visual feedback
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     try {
-      const response = await fetch('/api/parse', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text,
-          currentDate: REFERENCE_DATE // Pass current locked mock date May 31, 2026
-        })
-      });
-
-      if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
-        throw new Error(errBody.error || `HTTP 错误 ${response.status}`);
+      const result = parseVoiceText(text, REFERENCE_DATE);
+      if ('type' in result && result.type === 'unknown') {
+        throw new Error(result.message);
       }
-
-      const result = await response.json();
-      executeIntent(result, text);
+      executeIntent(result as any, text);
     } catch (err: any) {
       console.error(err);
-      addLog('error', `❌ 意图解析报错: ${err.message || '网络或网关连接故障，请检查 Gemini API KEY 设定'}`);
+      addLog('error', `❌ 本地解析报错: ${err.message || '由于规则局限，未能提取有效指令。'}`);
     } finally {
       setIsLoading(false);
     }
@@ -247,7 +238,7 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-500 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span>Gemini AI Connected</span>
+              <span>智能本地解析已激活 (Rule NLP Active)</span>
             </div>
             <div className="px-4 py-2 bg-slate-100 rounded-full text-xs font-black text-slate-500 uppercase tracking-widest font-mono">
               2026-05-31
@@ -267,7 +258,7 @@ export default function App() {
             <div className="text-xs text-blue-950 font-semibold leading-relaxed">
               <strong>演示使用贴士:</strong> 浏览器由于 iframe 安全策略可能限制麦克风启动。如果麦克风报错，可以随时使用
               <strong className="text-blue-600">“点击模拟说出”</strong> 或下方的输入框，同样可以 100% 连通并验证 
-              <strong className="text-blue-650">Gemini 智能解析</strong> 的智能日程。
+              <strong className="text-blue-650">本地智能 NLP 规则解析</strong>。
             </div>
           </div>
           <button 
@@ -353,10 +344,10 @@ export default function App() {
       {/* Elegant minimalist Footer */}
       <footer className="mt-16 border-t border-slate-200 bg-white py-10 px-6 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-bold">
-          <span>Voice Calendar © 2026 (智能语音演示版)</span>
+          <span>Voice Calendar © 2026 (本地纯前端演示版)</span>
           <div className="flex items-center gap-6">
-            <a href="#how" onClick={() => alert('使用教程:\n1. 授予网页麦克风录音权限。\n2. 说出指令口诀，如“明天下午三点腾讯面试”。\n3. 系统随即自动呼叫 Gemini 云端微服务识别意图，并在本地日历展示。')} className="hover:text-blue-600 transition-colors">如何使用？</a>
-            <span>Powered by Gemini & Web Speech API</span>
+            <a href="#how" onClick={() => alert('使用教程:\n1. 授予网页麦克风录音权限。\n2. 说出指令口诀，如“明天下午三点腾讯面试”。\n3. 系统通过本地 NLP 快速识别语音意图，零网络延迟。')} className="hover:text-blue-600 transition-colors">如何使用？</a>
+            <span>Powered by Local NLP & Web Speech API</span>
           </div>
         </div>
       </footer>

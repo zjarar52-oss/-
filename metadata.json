@@ -1,6 +1,6 @@
 {
   "name": "Voice Calendar Assistant",
-  "description": "A minimalist, voice-activated calendar assistant powered by Gemini API and Web Speech API.",
+  "description": "A minimalist, voice-activated calendar assistant using local rule-based NLP and Web Speech API.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -93,7 +93,7 @@ export default function Logs({ logs, onClearLogs }: LogsProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 text-[10px] text-slate-500 mb-0.5">
                     <span className="font-bold uppercase text-blue-400">
-                      {log.type === 'gemini' ? 'Gemini AI Parser' : log.type}
+                      {log.type === 'gemini' ? 'Local NLP Parser' : log.type}
                     </span>
                     <span>{log.timestamp}</span>
                   </div>

@@ -97,7 +97,7 @@ export default function VoicePanel({ onParseText, isLoading, addLog }: VoicePane
           <span>大声说出您的日程指令</span>
         </h3>
         <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-          使用 Web Speech 自动感应识别中文语音，并由 Gemini 智能理解意图。您也可以直接点击下方的快捷虚拟指令演示。
+          使用 Web Speech 自动感应识别中文语音，并由本地 NLP 智能理解意图。您也可以直接点击下方的快捷虚拟指令演示。
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export default function VoicePanel({ onParseText, isLoading, addLog }: VoicePane
         {isLoading && (
           <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center gap-3">
             <div className="w-8 h-8 border-3 border-blue-650 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-bold text-slate-800">Gemini 正在分析语音细节...</span>
+            <span className="text-xs font-bold text-slate-800">本地智能 NLP 正在分析语音细节...</span>
           </div>
         )}
       </div>
