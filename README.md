@@ -1,5 +1,5 @@
 # Voice Calendar Assistant
-【成品访问】 https://voice-calendar-assistant.netlify.app/
+【在线体验】 https://voice-calendar-assistant.netlify.app/
 
 【语音版日历工具DEMO】 https://www.bilibili.com/video/BV1p4VQ6XED3/?share_source=copy_web&vd_source=1a0fe5bdd2b05ede1ff03db5601835b6
 
