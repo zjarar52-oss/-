@@ -1,13 +1,203 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Voice Calendar Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 背景渐变层 -->
+        <div class="bg-gradient"></div>
+        
+        <!-- API Key 设置面板 -->
+        <div class="api-panel" id="apiPanel">
+            <div class="api-panel-content">
+                <div class="api-panel-icon">⚙️</div>
+                <h3>设置 DeepSeek API Key</h3>
+                <p class="api-hint">您的 API Key 将安全存储在本地浏览器中</p>
+                <div class="api-input-group">
+                    <input type="password" id="apiKeyInput" placeholder="sk-xxxxxxxxxxxxxxxx">
+                    <button id="saveApiKeyBtn" class="btn-primary">保存</button>
+                </div>
+                <button id="closeApiPanel" class="btn-text">稍后设置</button>
+            </div>
+        </div>
 
+        <!-- 顶部状态区 -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="settings-btn" id="settingsBtn">
+                    <svg viewBox="0 0 24 24" width="22" height="22">
+                        <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="header-center">
+                <div class="today-date" id="todayDate"></div>
+                <div class="greeting" id="greeting"></div>
+            </div>
+            <div class="header-right">
+                <div class="api-status" id="apiStatus" title="API Key 状态">
+                    <span class="status-dot"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 中央麦克风区域（视觉核心） -->
+        <section class="voice-section">
+            <div class="voice-container">
+                <!-- 波纹动画层 -->
+                <div class="ripple-container" id="rippleContainer">
+                    <div class="ripple ripple-1"></div>
+                    <div class="ripple ripple-2"></div>
+                    <div class="ripple ripple-3"></div>
+                </div>
+                
+                <!-- 主麦克风按钮 -->
+                <button class="voice-btn" id="voiceBtn">
+                    <div class="voice-btn-inner">
+                        <svg viewBox="0 0 24 24" class="mic-icon">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                        </svg>
+                    </div>
+                    <div class="voice-btn-glow"></div>
+                </button>
+                
+                <!-- 状态提示 -->
+                <div class="voice-status" id="voiceStatus">
+                    <span class="status-text">点击开始语音输入</span>
+                </div>
+            </div>
+            
+            <!-- 识别结果展示 -->
+            <div class="recognition-result" id="recognitionResult">
+                <div class="result-placeholder">
+                    <span class="placeholder-icon">💡</span>
+                    <span class="placeholder-text">说出你的日程，如"明天下午三点面试"</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块切换 Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="schedule">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+                </svg>
+                <span>当下 & 未来</span>
+            </button>
+            <button class="tab-btn" data-tab="memory">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <span>过去 & 记忆</span>
+            </button>
+        </div>
+
+        <!-- 内容区域 -->
+        <main class="content-section">
+            <!-- 当下 & 未来 模块 -->
+            <section class="tab-content active" id="scheduleContent">
+                <!-- 月历视图 -->
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" id="prevMonth">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                        </button>
+                        <h3 class="calendar-title" id="calendarTitle"></h3>
+                        <button class="calendar-nav-btn" id="nextMonth">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- 星期标题 -->
+                    <div class="calendar-weekdays">
+                        <span>日</span>
+                        <span>一</span>
+                        <span>二</span>
+                        <span>三</span>
+                        <span>四</span>
+                        <span>五</span>
+                        <span>六</span>
+                    </div>
+                    
+                    <!-- 日期格子 -->
+                    <div class="calendar-days" id="calendarDays"></div>
+                </div>
+                
+                <!-- 选中日期标题 -->
+                <div class="selected-date-header">
+                    <h4 id="selectedDateTitle">今日日程</h4>
+                    <span class="event-count" id="eventCount"></span>
+                </div>
+                
+                <!-- 日程列表 -->
+                <div class="schedule-list" id="scheduleList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <div class="empty-text">暂无日程安排</div>
+                        <div class="empty-hint">点击麦克风开始添加</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 过去 & 记忆 模块 -->
+            <section class="tab-content" id="memoryContent">
+                <!-- 记忆统计 -->
+                <div class="memory-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalMemories">0</div>
+                        <div class="stat-label">珍贵记忆</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="thisMonthMemories">0</div>
+                        <div class="stat-label">本月记录</div>
+                    </div>
+                </div>
+                
+                <!-- 记忆列表 -->
+                <div class="memory-list" id="memoryList">
+                    <div class="empty-state">
+                        <div class="empty-icon">✨</div>
+                        <div class="empty-text">开始记录你的高光时刻</div>
+                        <div class="empty-hint">说"记录今天拿到offer"</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 日程详情弹窗 -->
+        <div class="modal" id="eventModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">日程详情</h3>
+                    <button class="modal-close" id="closeModal">×</button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+                <div class="modal-footer">
+                    <button class="btn-danger" id="deleteEventBtn">删除</button>
+                    <button class="btn-secondary" id="closeModalBtn">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast 提示 -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script src="script.js"></script>
+
+<!-- AIGC: {"Label":"value1","ContentProducer":"001191110000802100433B11010001191110000802100433B11010","ProduceID":"39bad135-554e-401e-a703-a044fb08d5e1","ReservedCode1":"72dafc97cd38b92e5f3d5cdfd0dfbbe6","ContentPropagator":"001191110000802100433B11010001191110000802100433B11010","PropagateID":"3212fc80-17b4-43db-ad89-3ff5c97ecdb6","ReservedCode2":"2734827274df537123a472bf4de01eb5"} -->
+</body>
+</html>
