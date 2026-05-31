@@ -516,7 +516,7 @@ export default function App() {
                   语音版日历工具
                 </h1>
                 <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] uppercase font-black tracking-widest rounded border border-blue-100">
-                  大学生轻量日程
+                  傻瓜式规划，typeless万岁🎉
                 </span>
               </div>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">
